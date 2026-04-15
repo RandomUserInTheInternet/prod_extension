@@ -65,17 +65,16 @@ class DefaultExtension extends MProvider {
     encodeImageUrl(url) {
         if (!url) return "";
         try {
-            // Split on protocol+host vs path to only encode the path portion
-            const match = url.match(/^(https?:\/\/[^\/]+)(\/.*)?$/);
+            var match = url.match(/^(https?:\/\/[^\/]+)(\/.*)?$/);
             if (match) {
-                const host = match[1];
-                const path = match[2] || "";
-                // Encode each path segment individually (preserves slashes)
-                const encoded = path
-                    .split("/")
-                    .map(seg => encodeURIComponent(seg))
-                    .join("/");
-                return host + encoded;
+                var host = match[1];
+                var path = match[2] || "";
+                var segments = path.split("/");
+                var encodedSegments = [];
+                for (var i = 0; i < segments.length; i++) {
+                    encodedSegments.push(encodeURIComponent(segments[i]));
+                }
+                return host + encodedSegments.join("/");
             }
         } catch (e) {}
         return url;
