@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.1.10",
+    "version": "0.1.6",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": true,
@@ -18,9 +18,27 @@ class DefaultExtension extends MProvider {
     constructor() {
         super();
         this.client = new Client();
-        var overrideUrl = new SharedPreferences().get("overrideBaseUrl");
-        this.baseUrl = (overrideUrl && overrideUrl.trim() !== "") ? overrideUrl.trim() : "https://oppai.stream";
+        // NOTE: Do NOT call SharedPreferences here — sendMessage() is a
+        // synchronous FFI callback that acquires the Dart isolate lock.
+        // Calling it during construction (which itself runs inside _init())
+        // causes a re-entrant lock acquisition that crashes the QuickJS
+        // TrampolinePage (js_channel+100, libqjs.so) in Nuord v3.3.2+.
+        // Base URL is resolved lazily on first access instead.
+        this._baseUrl = null;
     }
+
+    // Lazy getter — SharedPreferences is safe to call here because any
+    // caller of baseUrl runs *after* _init() has completed.
+    get baseUrl() {
+        if (!this._baseUrl) {
+            var overrideUrl = new SharedPreferences().get("overrideBaseUrl");
+            this._baseUrl = (overrideUrl && overrideUrl.trim() !== "")
+                ? overrideUrl.trim()
+                : "https://oppai.stream";
+        }
+        return this._baseUrl;
+    }
+    set baseUrl(v) { this._baseUrl = v; }
 
     getPreference(key) {
         return new SharedPreferences().get(key);
@@ -41,25 +59,6 @@ class DefaultExtension extends MProvider {
     async requestRaw(url) {
         const res = await this.client.get(url, this.getHeaders());
         return res.body;
-    }
-    // URL-encode spaces and special chars in thumbnail paths
-    // myspacecat.pictures serves folder-based paths with unencoded spaces
-    encodeImageUrl(url) {
-        if (!url) return "";
-        try {
-            var match = url.match(/^(https?:\/\/[^\/]+)(\/.*)?$/);
-            if (match) {
-                var host = match[1];
-                var path = match[2] || "";
-                var segments = path.split("/");
-                var encodedSegments = [];
-                for (var i = 0; i < segments.length; i++) {
-                    encodedSegments.push(encodeURIComponent(segments[i]));
-                }
-                return host + encodedSegments.join("/");
-            }
-        } catch (e) {}
-        return url;
     }
 
     async getPopular(page) {
@@ -85,12 +84,9 @@ class DefaultExtension extends MProvider {
                     const name = element.selectFirst(".title-ep")?.text?.trim() || 
                                 element.selectFirst("h5")?.text?.trim() || "";
                     
-                    const imageUrl = this.encodeImageUrl(
-                        element.selectFirst("img.cover-img-in")?.attr("src") ||
-                        element.selectFirst("img.cover-img-in")?.attr("original") ||
-                        element.selectFirst("img")?.attr("src") ||
-                        element.selectFirst("img")?.attr("original") || ""
-                    );
+                    const imageUrl = element.selectFirst("img")?.getSrc || 
+                                    element.selectFirst("img")?.attr("src") ||
+                                    element.selectFirst("img")?.attr("data-src") || "";
                     
                     if (name && link) {
                         list.push({ name, imageUrl, link });
@@ -135,12 +131,9 @@ class DefaultExtension extends MProvider {
                     const name = element.selectFirst(".title-ep")?.text?.trim() || 
                                 element.selectFirst("h5")?.text?.trim() || "";
                     
-                    const imageUrl = this.encodeImageUrl(
-                        element.selectFirst("img.cover-img-in")?.attr("src") ||
-                        element.selectFirst("img.cover-img-in")?.attr("original") ||
-                        element.selectFirst("img")?.attr("src") ||
-                        element.selectFirst("img")?.attr("original") || ""
-                    );
+                    const imageUrl = element.selectFirst("img")?.getSrc || 
+                                    element.selectFirst("img")?.attr("src") ||
+                                    element.selectFirst("img")?.attr("data-src") || "";
                     
                     if (name && link) {
                         list.push({ name, imageUrl, link });
@@ -186,12 +179,9 @@ class DefaultExtension extends MProvider {
                     const name = element.selectFirst(".title-ep")?.text?.trim() || 
                                 element.selectFirst("h5")?.text?.trim() || "";
                     
-                    const imageUrl = this.encodeImageUrl(
-                        element.selectFirst("img.cover-img-in")?.attr("src") ||
-                        element.selectFirst("img.cover-img-in")?.attr("original") ||
-                        element.selectFirst("img")?.attr("src") ||
-                        element.selectFirst("img")?.attr("original") || ""
-                    );
+                    const imageUrl = element.selectFirst("img")?.getSrc || 
+                                    element.selectFirst("img")?.attr("src") ||
+                                    element.selectFirst("img")?.attr("data-src") || "";
                     
                     if (name && link) {
                         list.push({ name, imageUrl, link });
@@ -262,72 +252,70 @@ class DefaultExtension extends MProvider {
             }
             
             const currentSlug = this.getAnimeSlugFromUrl(fullUrl);
-            console.log("Current slug: " + currentSlug);
+            const baseAnimeName = this.getBaseAnimeName(currentSlug);
+            console.log("Current slug: " + currentSlug + ", Base name: " + baseAnimeName);
             
             const chapters = [];
-
-            // --- Primary strategy: episode number buttons (div.more-eps-p a.show-ep-num) ---
-            // These are statically rendered in the HTML and contain all same-series episodes.
-            // URL format: /watch?e=<slug>  (no &for= noise)
-            const epNumLinks = doc.select("div.more-eps-p a.show-ep-num");
-            console.log("Episode number links found: " + epNumLinks.length);
-
-            for (const link of epNumLinks) {
+            
+            const episodeElements = doc.select("div.more-same-eps div.in-grid.episode-shown, div.other-episodes div.in-grid.episode-shown");
+            console.log("Found potential episodes: " + episodeElements.length);
+            
+            for (const element of episodeElements) {
                 try {
-                    let epUrl = link.attr("href") || link.getHref || "";
-                    if (!epUrl) continue;
-                    if (!epUrl.startsWith("http")) {
-                        epUrl = `${this.baseUrl}${epUrl}`;
+                    const linkElement = element.selectFirst("a");
+                    let episodeUrl = linkElement?.attr("href") || linkElement?.getHref || "";
+                    
+                    if (!episodeUrl) continue;
+                    
+                    if (episodeUrl.includes("&for=episode-more")) {
+                        episodeUrl = episodeUrl.replace("&for=episode-more", "");
                     }
-                    const epSlug = this.getAnimeSlugFromUrl(epUrl);
-                    const epMatch = epSlug.match(/-(\d+)$/);
-                    const epNum = epMatch ? epMatch[1] : link.text?.trim() || "";
-                    const name = epNum ? `Episode ${epNum}` : "Episode";
-                    if (!chapters.some(c => c.url === epUrl)) {
-                        chapters.push({ name, url: epUrl, dateUpload: null });
-                        console.log("Added ep (num-btn): " + name + " -> " + epUrl);
+                    
+                    if (!episodeUrl.startsWith("http")) {
+                        episodeUrl = `${this.baseUrl}${episodeUrl}`;
+                    }
+                    
+                    const episodeSlug = this.getAnimeSlugFromUrl(episodeUrl);
+                    const episodeBaseName = this.getBaseAnimeName(episodeSlug);
+                    
+                    if (baseAnimeName && episodeBaseName && 
+                        episodeBaseName.toLowerCase() === baseAnimeName.toLowerCase()) {
+                        
+                        const epNumber = element.selectFirst("h5 .ep, .ep")?.text?.trim() || "";
+                        const epTitle = element.selectFirst("h5 .title, .title-ep")?.text?.trim() || "";
+                        
+                        let name = "";
+                        if (epNumber) {
+                            name = `Episode ${epNumber}`;
+                            if (epTitle) name += `: ${epTitle}`;
+                        } else if (epTitle) {
+                            name = epTitle;
+                        } else {
+                            const urlEpMatch = episodeSlug.match(/-(\d+)$/);
+                            if (urlEpMatch) {
+                                name = `Episode ${urlEpMatch[1]}`;
+                            } else {
+                                name = "Episode";
+                            }
+                        }
+                        
+                        if (!chapters.some(c => c.url === episodeUrl)) {
+                            chapters.push({ 
+                                name, 
+                                url: episodeUrl,
+                                dateUpload: null
+                            });
+                            console.log("Added episode: " + name + " -> " + episodeUrl);
+                        }
                     }
                 } catch (e) {
                     continue;
                 }
             }
-
-            // --- Secondary strategy: more-same-eps card grid ---
-            // Fallback when the number buttons are missing/empty (shouldn't happen normally).
-            if (chapters.length === 0) {
-                const baseAnimeName = this.getBaseAnimeName(currentSlug);
-                console.log("Fallback: base anime name = " + baseAnimeName);
-                const episodeElements = doc.select("div.more-same-eps div.in-grid.episode-shown");
-                console.log("Card elements found: " + episodeElements.length);
-                for (const element of episodeElements) {
-                    try {
-                        const linkEl = element.selectFirst("a");
-                        let episodeUrl = linkEl?.attr("href") || linkEl?.getHref || "";
-                        if (!episodeUrl) continue;
-                        episodeUrl = episodeUrl.replace("&for=episode-more", "");
-                        if (!episodeUrl.startsWith("http")) {
-                            episodeUrl = `${this.baseUrl}${episodeUrl}`;
-                        }
-                        const epSlug = this.getAnimeSlugFromUrl(episodeUrl);
-                        const epBase = this.getBaseAnimeName(epSlug);
-                        if (baseAnimeName && epBase && epBase.toLowerCase() === baseAnimeName.toLowerCase()) {
-                            const epMatch = epSlug.match(/-(\d+)$/);
-                            const name = epMatch ? `Episode ${epMatch[1]}` : "Episode";
-                            if (!chapters.some(c => c.url === episodeUrl)) {
-                                chapters.push({ name, url: episodeUrl, dateUpload: null });
-                                console.log("Added ep (card): " + name + " -> " + episodeUrl);
-                            }
-                        }
-                    } catch (e) {
-                        continue;
-                    }
-                }
-            }
-
-            // Always ensure the current episode is included
+            
             if (!chapters.some(c => c.url === fullUrl)) {
-                const epMatch = currentSlug.match(/-(\d+)$/);
-                const epNum = epMatch ? epMatch[1] : "1";
+                const currentEpMatch = currentSlug.match(/-(\d+)$/);
+                const epNum = currentEpMatch ? currentEpMatch[1] : "1";
                 chapters.unshift({ 
                     name: `Episode ${epNum}`, 
                     url: fullUrl,
@@ -405,44 +393,6 @@ class DefaultExtension extends MProvider {
             }
         } catch (e) {
             console.log("buildSubtitleUrl error: " + e);
-        }
-        return null;
-    }
-
-    // Fetch the VTT, fix its format issues, and return a cleaned data: URL.
-    // Oppai.stream VTTs use 2-part timestamps (MM:SS.mmm) instead of the
-    // 3-part form (HH:MM:SS.mmm) that Mangayomi requires, and include <i>
-    // HTML cue tags that can also trip up the parser.
-    async fetchAndCleanSubtitle(subtitleUrl) {
-        try {
-            const res = await this.client.get(subtitleUrl, {
-                "Referer": this.baseUrl + "/",
-                "User-Agent": this.getHeaders()["User-Agent"]
-            });
-            if (res.statusCode !== 200) return null;
-            let vtt = res.body || "";
-            if (!vtt.toUpperCase().includes("WEBVTT")) return null;
-
-            // 1. Convert 2-part timestamps  MM:SS.mmm -> HH:MM:SS.mmm
-            //    e.g. "00:02.510 --> 00:05.180" -> "00:00:02.510 --> 00:00:05.180"
-            vtt = vtt.replace(
-                /^(\d{1,2}:\d{2}\.\d{3})(\s+-->\s+)(\d{1,2}:\d{2}\.\d{3})(.*)?$/gm,
-                function(match, ts1, sep, ts2, rest) {
-                    function fix(ts) {
-                        return (ts.split(':').length === 2) ? '00:' + ts : ts;
-                    }
-                    return fix(ts1) + sep + fix(ts2) + (rest || '');
-                }
-            );
-
-            // 2. Strip HTML/VTT cue-span tags  (<i>, </i>, <b>, <c.color>, etc.)
-            vtt = vtt.replace(/<[^>]+>/g, '');
-
-            // 3. Return as data URL so Mangayomi loads the clean content directly
-            console.log("Subtitle cleaned and encoded for: " + subtitleUrl);
-            return 'data:text/vtt;charset=utf-8,' + encodeURIComponent(vtt);
-        } catch (e) {
-            console.log("fetchAndCleanSubtitle error for " + subtitleUrl + ": " + e);
         }
         return null;
     }
@@ -599,21 +549,20 @@ class DefaultExtension extends MProvider {
                 return aMatch - bMatch;
             });
 
-            // Attach subtitles when the setting is enabled
-            // Oppai.stream subtitle URL = video base URL + _SUB_1.vtt?v=1
+            // Attach subtitles when the setting is enabled.
+            // Return the raw VTT URL — NOT a data: URI — so the FFI payload
+            // stays small. The native player in watch_screen.dart handles
+            // remote .vtt URLs directly via SubtitleTrack.
             const loadSubs = new SharedPreferences().get("load_subtitles");
             const wantSubs = (loadSubs === undefined || loadSubs === true || loadSubs === "true");
             if (wantSubs) {
-                console.log("Loading subtitles for " + videos.length + " videos");
+                console.log("Attaching subtitle URLs for " + videos.length + " videos");
                 for (const video of videos) {
                     try {
                         const subUrl = this.buildSubtitleUrl(video.url);
                         if (subUrl) {
-                            const cleanedUrl = await this.fetchAndCleanSubtitle(subUrl);
-                            if (cleanedUrl) {
-                                video.subtitles = [{ file: cleanedUrl, label: "English" }];
-                                console.log("Subtitle URL attached: " + subUrl);
-                            }
+                            video.subtitles = [{ file: subUrl, label: "English" }];
+                            console.log("Subtitle URL attached: " + subUrl);
                         }
                     } catch (subErr) {
                         console.log("Subtitle attach error: " + subErr);
@@ -654,6 +603,11 @@ class DefaultExtension extends MProvider {
                 }
             },
             {
+                // NOTE: Only 'title', 'summary', and 'value' are supported by
+                // SourcePreference.fromJson() in the bridge (v0.0.4). The keys
+                // 'dialogTitle' and 'dialogMessage' are NOT in the schema and
+                // cause an offset overflow in the QuickJS TrampolinePage when
+                // getSourcePreferences() is called, crashing the app at startup.
                 key: "overrideBaseUrl",
                 editTextPreference: {
                     title: "Override Base URL",
@@ -683,4 +637,3 @@ class DefaultExtension extends MProvider {
 }
 
 var extension = new DefaultExtension();
-var extention = new DefaultExtension();

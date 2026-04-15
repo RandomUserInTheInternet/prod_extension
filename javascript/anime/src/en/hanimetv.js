@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.3",
+    "version": "0.0.2",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": true,
@@ -96,15 +96,7 @@ class DefaultExtension extends MProvider {
                 var slug = v.slug || "";
                 if (!slug) continue;
                 var name = v.name || slug;
-
-                // cover_url/poster_url from the cached API are often 401-gated.
-                // The hanime-cdn.com CDN serves these publicly with Referer: https://hanime.tv/
-                // Pattern: https://hanime-cdn.com/images/covers/{slug}-cv1.png
-                //      or: https://hanime-cdn.com/images/posters/{slug}-pv1.jpg
-                var imageUrl = v.cover_url ||
-                               v.poster_url ||
-                               ("https://hanime-cdn.com/images/covers/" + slug + "-cv1.png");
-
+                var imageUrl = v.cover_url || v.poster_url || "";
                 var link = this.baseUrl + "/videos/hentai/" + slug;
                 list.push({ name, imageUrl, link });
             } catch (e) {
