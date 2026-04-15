@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.1.6",
+    "version": "0.1.11",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": true,
@@ -257,45 +257,37 @@ class DefaultExtension extends MProvider {
             
             const chapters = [];
             
-            const episodeElements = doc.select("div.more-same-eps div.in-grid.episode-shown, div.other-episodes div.in-grid.episode-shown");
-            console.log("Found potential episodes: " + episodeElements.length);
+            const episodeElements = doc.select("div.phone-options div.more-eps-p a, div.phone-options div.more-eps-p div.show-ep-num");
+            console.log("Found potential episodes via phone-options: " + episodeElements.length);
             
-            for (const element of episodeElements) {
-                try {
-                    const linkElement = element.selectFirst("a");
-                    let episodeUrl = linkElement?.attr("href") || linkElement?.getHref || "";
-                    
-                    if (!episodeUrl) continue;
-                    
-                    if (episodeUrl.includes("&for=episode-more")) {
-                        episodeUrl = episodeUrl.replace("&for=episode-more", "");
-                    }
-                    
-                    if (!episodeUrl.startsWith("http")) {
-                        episodeUrl = `${this.baseUrl}${episodeUrl}`;
-                    }
-                    
-                    const episodeSlug = this.getAnimeSlugFromUrl(episodeUrl);
-                    const episodeBaseName = this.getBaseAnimeName(episodeSlug);
-                    
-                    if (baseAnimeName && episodeBaseName && 
-                        episodeBaseName.toLowerCase() === baseAnimeName.toLowerCase()) {
+            if (episodeElements && episodeElements.length > 0) {
+                for (const element of episodeElements) {
+                    try {
+                        let episodeUrl = element.attr("href") || element.getHref || "";
+                        if (!episodeUrl) {
+                             // Active episode uses a div without an href but with active-ep-num class
+                             episodeUrl = fullUrl;
+                        }
                         
-                        const epNumber = element.selectFirst("h5 .ep, .ep")?.text?.trim() || "";
-                        const epTitle = element.selectFirst("h5 .title, .title-ep")?.text?.trim() || "";
+                        if (episodeUrl.includes("&for=")) {
+                            episodeUrl = episodeUrl.split("&for=")[0];
+                        }
                         
+                        if (!episodeUrl.startsWith("http")) {
+                            episodeUrl = `${this.baseUrl}${episodeUrl}`;
+                        }
+                        
+                        const epNumber = element.text?.trim() || "";
                         let name = "";
                         if (epNumber) {
                             name = `Episode ${epNumber}`;
-                            if (epTitle) name += `: ${epTitle}`;
-                        } else if (epTitle) {
-                            name = epTitle;
                         } else {
+                            const episodeSlug = this.getAnimeSlugFromUrl(episodeUrl);
                             const urlEpMatch = episodeSlug.match(/-(\d+)$/);
                             if (urlEpMatch) {
                                 name = `Episode ${urlEpMatch[1]}`;
                             } else {
-                                name = "Episode";
+                                name = "Episode 1";
                             }
                         }
                         
@@ -305,11 +297,67 @@ class DefaultExtension extends MProvider {
                                 url: episodeUrl,
                                 dateUpload: null
                             });
-                            console.log("Added episode: " + name + " -> " + episodeUrl);
+                            console.log("Added episode from phone-options: " + name + " -> " + episodeUrl);
                         }
+                    } catch (e) {
+                        continue;
                     }
-                } catch (e) {
-                    continue;
+                }
+            } else {
+                console.log("Fallback to other-episodes parsing");
+                const episodeElementsOld = doc.select("div.more-same-eps div.in-grid.episode-shown, div.other-episodes div.in-grid.episode-shown");
+                
+                for (const element of episodeElementsOld) {
+                    try {
+                        const linkElement = element.selectFirst("a");
+                        let episodeUrl = linkElement?.attr("href") || linkElement?.getHref || "";
+                        
+                        if (!episodeUrl) continue;
+                        
+                        if (episodeUrl.includes("&for=")) {
+                            episodeUrl = episodeUrl.split("&for=")[0];
+                        }
+                        
+                        if (!episodeUrl.startsWith("http")) {
+                            episodeUrl = `${this.baseUrl}${episodeUrl}`;
+                        }
+                        
+                        const episodeSlug = this.getAnimeSlugFromUrl(episodeUrl);
+                        const episodeBaseName = this.getBaseAnimeName(episodeSlug);
+                        
+                        if (baseAnimeName && episodeBaseName && 
+                            episodeBaseName.toLowerCase() === baseAnimeName.toLowerCase()) {
+                            
+                            const epNumber = element.selectFirst("h5 .ep, .ep")?.text?.trim() || "";
+                            const epTitle = element.selectFirst("h5 .title, .title-ep")?.text?.trim() || "";
+                            
+                            let name = "";
+                            if (epNumber) {
+                                name = `Episode ${epNumber}`;
+                                if (epTitle) name += `: ${epTitle}`;
+                            } else if (epTitle) {
+                                name = epTitle;
+                            } else {
+                                const urlEpMatch = episodeSlug.match(/-(\d+)$/);
+                                if (urlEpMatch) {
+                                    name = `Episode ${urlEpMatch[1]}`;
+                                } else {
+                                    name = "Episode";
+                                }
+                            }
+                            
+                            if (!chapters.some(c => c.url === episodeUrl)) {
+                                chapters.push({ 
+                                    name, 
+                                    url: episodeUrl,
+                                    dateUpload: null
+                                });
+                                console.log("Added episode from fallback: " + name + " -> " + episodeUrl);
+                            }
+                        }
+                    } catch (e) {
+                        continue;
+                    }
                 }
             }
             
