@@ -33,7 +33,6 @@ A comprehensive guide for creating anime/manga extensions for Mangayomi.
    - Language: ISO 639-1 code (e.g., "en", "es", "fr")
    - Base URL: The website's main URL
    - Type: Select "Anime" or "Manga"
-   - NSFW: Check if content is 18+
 4. **Click Save**
 5. **Click on your extension** and select "Edit Code"
 6. **Start with the template:** Copy from `templates/extension-template-anime.js`
@@ -61,7 +60,6 @@ const mangayomiSources = [{
     "version": "0.1.0",
     "dateFormat": "",
     "dateFormatLocale": "",
-    "isNsfw": false,
     "pkgPath": "anime/src/en/yourextension.js"
 }];
 ```
@@ -81,7 +79,6 @@ const mangayomiSources = [{
 | `version` | String | Yes | Semantic version (e.g., "0.1.0") |
 | `dateFormat` | String | No | Date format pattern |
 | `dateFormatLocale` | String | No | Locale for date parsing |
-| `isNsfw` | Boolean | No | true if 18+ content |
 | `pkgPath` | String | Yes | File path in repository |
 
 ### 2. Extension Class
@@ -836,7 +833,6 @@ console.log("HTML preview: " + html.substring(0, 500));
 3. **Update metadata:**
    - Set appropriate version number
    - Verify baseUrl is correct
-   - Check isNsfw flag
 
 4. **Add to repository:**
    - Place file in correct directory: `javascript/anime/src/{lang}/{name}.js`
@@ -850,7 +846,7 @@ mangayomi-extensions/
 │   ├── anime/
 │   │   └── src/
 │   │       ├── en/
-│   │       │   ├── oppaistream.js
+│   │       │   ├── sampleextension.js
 │   │       │   └── yourextension.js
 │   │       ├── es/
 │   │       └── ...

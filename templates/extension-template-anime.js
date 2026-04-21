@@ -24,7 +24,6 @@ const mangayomiSources = [{
     "version": "0.1.0",                         // Start with 0.1.0, increment on changes
     "dateFormat": "",                           // Optional: date format if needed
     "dateFormatLocale": "",                     // Optional: locale for dates
-    "isNsfw": false,                            // TODO: Set true if content is 18+
     "pkgPath": "anime/src/en/yourextension.js"  // TODO: Update path to match your file
 }];
 

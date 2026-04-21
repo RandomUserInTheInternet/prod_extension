@@ -1,6 +1,5 @@
 import '../../../../model/source.dart';
 import 'src/en/mangabat/mangabat.dart';
-import 'src/mangairo/mangaeiro.dart';
 import 'src/en/mangakakalot/mangakakalot.dart';
 import 'src/en/manganato/manganato.dart';
 
@@ -13,8 +12,6 @@ List<Source> _mangaboxSourcesList =
     [
           //Mangabat (EN)
           mangabatSource,
-          //Mangairo (EN)
-          mangairoSource,
           //Mangakakalot (EN)
           mangakakalotSource,
           //Manganato (EN)

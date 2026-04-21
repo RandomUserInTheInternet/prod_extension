@@ -11,14 +11,14 @@ Custom extension repository for the Mangayomi app.
 
 
 ```
-https://raw.githubusercontent.com/RandomUserInTheInternet/mangayomi-extensionstet/main/anime_index.json
+https://raw.githubusercontent.com/RandomUserInTheInternet/prod_extension/main/anime_index.json
 ```
 
 ### Option 2: Direct Link
 
 Click to add the repository directly:
 
-[![Add to Mangayomi](https://img.shields.io/badge/Add%20to-Mangayomi-blue?style=for-the-badge)](https://intradeus.github.io/http-protocol-redirector?r=mangayomi://add-repo?repo_name=RandomUserInTheInternet-extensions%26repo_url=https://github.com/RandomUserInTheInternet/mangayomi-extensionstet%26anime_url=https://raw.githubusercontent.com/RandomUserInTheInternet/mangayomi-extensionstet/main/anime_index.json)
+[![Add to Mangayomi](https://img.shields.io/badge/Add%20to-Mangayomi-blue?style=for-the-badge)](https://intradeus.github.io/http-protocol-redirector?r=mangayomi://add-repo?repo_name=RandomUserInTheInternet-extensions%26repo_url=https://github.com/RandomUserInTheInternet/prod_extension%26anime_url=https://raw.githubusercontent.com/RandomUserInTheInternet/prod_extension/main/anime_index.json)
 
 ## Features
 
@@ -62,4 +62,3 @@ This extension is for educational purposes only. The developer does not host any
 ## License
 
 This project is licensed under the Apache License 2.0.
-

@@ -50,7 +50,6 @@ create a Pull Request.
 | `iconUrl` | The extension icon URL |
 | `version` | The extension version code. This must be incremented with any change to the code. |
 | `dateFormatLocale` | (Optional, defaults is empty) |
-| `isNsfw` | (Optional, defaults to `false`) Flag to indicate that a source contains NSFW content. |
 
 ### Extension call flow
 
