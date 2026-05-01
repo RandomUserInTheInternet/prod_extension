@@ -159,10 +159,9 @@ class DefaultExtension extends MProvider {
     // url = slug like "naruto-shippuden-c8gov"
     async getDetail(url) {
         var slug = url;
-        var pageUrl = this.baseUrl + "/watch/" + slug;
-        console.log("AniKoto getDetail: " + pageUrl);
+        console.log("AniKoto getDetail: " + slug);
 
-        var name = "";
+        var name = slug.replace(/-[a-z0-9]{5}$/, "").replace(/-/g, " ");
         var imageUrl = "";
         var description = "";
         var genre = [];
@@ -170,34 +169,39 @@ class DefaultExtension extends MProvider {
         var chapters = [];
 
         try {
-            var res = await this.client.get(pageUrl, this.getHeaders());
-            if (res.statusCode !== 200) {
-                console.log("Detail page error: " + res.statusCode);
-                return { name: slug, imageUrl: "", description: "", genre: [], status: 5, chapters: [] };
-            }
-            var html = res.body;
+            var ajaxHeaders = Object.assign({}, this.getHeaders(), { "X-Requested-With": "XMLHttpRequest" });
 
-            // Title — og:title
+            // Fetch ep-1 page (always available, has data-id and full metadata)
+            var ep1Url = this.baseUrl + "/watch/" + slug + "/ep-1";
+            var ep1Res = await this.client.get(ep1Url, this.getHeaders());
+            if (ep1Res.statusCode !== 200) {
+                console.log("ep-1 page error: " + ep1Res.statusCode);
+                chapters.push({ name: "Episode 1", url: slug + "||1||" });
+                return { name, imageUrl, description, genre, status, chapters };
+            }
+            var html = ep1Res.body;
+
+            // Title
             var titleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)
                            || html.match(/<title>([^<]+)<\/title>/i);
             if (titleMatch) {
                 name = titleMatch[1]
+                    .replace(/\s*Episode\s*\d+.*$/i, "")
                     .replace(/\s*-\s*Anikoto.*$/i, "")
                     .replace(/^Anime\s+/i, "")
                     .replace(/\s*Watch Online Free\s*$/i, "")
                     .trim();
             }
-            if (!name) name = slug.replace(/-[a-z0-9]{5}$/, "").replace(/-/g, " ");
 
             // Image
             imageUrl = this.extractImage(html);
 
-            // Description — og:description
+            // Description
             var descMatch = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)
                           || html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
             if (descMatch) description = descMatch[1].trim();
 
-            // Genres — links to /genre/
+            // Genres
             var genreRegex = /href=["']\/genre\/([^"'\/]+)["'][^>]*>([^<]+)</gi;
             var gm;
             var genreSet = new Set();
@@ -211,43 +215,43 @@ class DefaultExtension extends MProvider {
             else if (/currently.airing|ongoing/i.test(html)) status = 0;
             else if (/not.yet.aired/i.test(html)) status = 2;
 
-            // Episodes — find all /watch/{slug}/ep-{N} links
-            var epRegex = /href=["']\/watch\/(([a-z0-9][a-z0-9\-]*[a-z0-9])\/ep-(\d+))["']/gi;
-            var epSeen = new Set();
-            var em;
-            while ((em = epRegex.exec(html)) !== null) {
-                var epNum = parseInt(em[3], 10);
-                var epSlug = em[2]; // the base slug
-                var key = epSlug + "||" + epNum;
-                if (!epSeen.has(key)) {
-                    epSeen.add(key);
-                    chapters.push({
-                        name: "Episode " + epNum,
-                        url: epSlug + "||" + epNum
-                    });
-                }
-            }
-
-            // If no episodes found from links, try fetching via episode count heuristic
-            if (chapters.length === 0) {
-                // Check ep count from page text like "500 Eps" or "1159 Eps"
-                var epCountMatch = html.match(/(\d+)\s*(?:Eps|Episodes)/i);
-                var epCount = epCountMatch ? parseInt(epCountMatch[1], 10) : 0;
-                if (epCount > 0 && epCount <= 2000) {
-                    for (var i = 1; i <= epCount; i++) {
-                        chapters.push({ name: "Episode " + i, url: slug + "||" + i });
+            // data-id for AJAX episode list
+            var dataIdMatch = html.match(/data-id=["'](\d+)["']/);
+            if (dataIdMatch) {
+                var animeId = dataIdMatch[1];
+                var listRes = await this.client.get(this.baseUrl + "/ajax/episode/list/" + animeId, ajaxHeaders);
+                if (listRes.statusCode === 200) {
+                    var listData;
+                    try { listData = JSON.parse(listRes.body).result; } catch(e) { listData = listRes.body; }
+                    var epSeenNums = new Set();
+                    var epItemRegex = /data-num=["'](\d+)["'][^>]*data-ids=["']([^"']+)["']/gi;
+                    var em;
+                    while ((em = epItemRegex.exec(listData)) !== null) {
+                        var epNum = parseInt(em[1], 10);
+                        if (!epSeenNums.has(epNum)) {
+                            epSeenNums.add(epNum);
+                            chapters.push({ name: "Episode " + epNum, url: slug + "||" + epNum + "||" + em[2] });
+                        }
                     }
-                } else {
-                    // Fallback: just ep 1
-                    chapters.push({ name: "Episode 1", url: slug + "||1" });
+                    if (chapters.length === 0) {
+                        var epItemRegex2 = /data-ids=["']([^"']+)["'][^>]*data-num=["'](\d+)["']/gi;
+                        while ((em = epItemRegex2.exec(listData)) !== null) {
+                            var epNum2 = parseInt(em[2], 10);
+                            if (!epSeenNums.has(epNum2)) {
+                                epSeenNums.add(epNum2);
+                                chapters.push({ name: "Episode " + epNum2, url: slug + "||" + epNum2 + "||" + em[1] });
+                            }
+                        }
+                    }
                 }
             }
 
-            // Sort episodes ascending
+            if (chapters.length === 0) {
+                chapters.push({ name: "Episode 1", url: slug + "||1||" });
+            }
+
             chapters.sort(function(a, b) {
-                var na = parseInt((a.url.split("||")[1] || "0"), 10);
-                var nb = parseInt((b.url.split("||")[1] || "0"), 10);
-                return na - nb;
+                return parseInt((a.url.split("||")[1] || "0"), 10) - parseInt((b.url.split("||")[1] || "0"), 10);
             });
 
             console.log("Detail: " + name + ", " + chapters.length + " eps");
@@ -258,16 +262,14 @@ class DefaultExtension extends MProvider {
         return { name, imageUrl, description, genre, status, chapters };
     }
 
-    // ── getVideoList ──────────────────────────────────────────────────────────
-    // url format: "{slug}||{epNum}"
+        // ── getVideoList ──────────────────────────────────────────────────────────
+    // url format: "{slug}||{epNum}||{dataIds}"
     async getVideoList(url) {
         var parts = url.split("||");
-        if (parts.length < 2) {
-            console.log("Invalid episode URL: " + url);
-            return [];
-        }
         var slug = parts[0];
-        var epNum = parts[1];
+        var epNum = parts[1] || "1";
+        // parts[2] is the pre-cached dataIds from getDetail
+        var cachedDataIds = parts[2] || "";
         var epUrl = this.baseUrl + "/watch/" + slug + "/ep-" + epNum;
 
         console.log("AniKoto getVideoList: " + epUrl);
@@ -276,60 +278,51 @@ class DefaultExtension extends MProvider {
             var headers = this.getHeaders();
             var ajaxHeaders = Object.assign({}, headers, { "X-Requested-With": "XMLHttpRequest" });
 
-            // 1. Fetch the episode page to get the mangaId
-            var res = await this.client.get(epUrl, headers);
-            if (res.statusCode !== 200) {
-                console.log("Episode page error: " + res.statusCode);
-                return [];
-            }
-            var html = res.body;
-            
-            var mangaIdMatch = html.match(/const mangaId\s*=\s*(\d+)/i) || html.match(/api\/watch-order\/(\d+)/i);
-            if (!mangaIdMatch) {
-                console.log("No mangaId found on page");
-                return [{ url: epUrl, originalUrl: epUrl, quality: "Web", headers: { "Referer": this.baseUrl + "/" } }];
-            }
-            var mangaId = mangaIdMatch[1];
+            var dataIds = cachedDataIds;
 
-            // 2. Fetch the episode list JSON to get the encrypted server IDs for this episode
-            var epListRes = await this.client.get(this.baseUrl + "/ajax/episode/list/" + mangaId, ajaxHeaders);
-            if (epListRes.statusCode !== 200) return [];
-            
-            var listHtml = "";
-            try {
-                listHtml = JSON.parse(epListRes.body).result;
-            } catch(e) { listHtml = epListRes.body; }
+            // If we don't have cached dataIds, fetch from episode page + AJAX
+            if (!dataIds) {
+                var res = await this.client.get(epUrl, headers);
+                if (res.statusCode !== 200) {
+                    console.log("Episode page error: " + res.statusCode);
+                    return [];
+                }
+                var html = res.body;
 
-            // Find the correct episode by href ending in /ep-{epNum}
-            var epRegex = new RegExp(`href=["'][^"']+\\/ep-${epNum}["'][^>]*data-ids=["']([^"']+)["']`, 'i');
-            var match = listHtml.match(epRegex);
-            if (!match) {
-                epRegex = new RegExp(`data-ids=["']([^"']+)["'][^>]*href=["'][^"']+\\/ep-${epNum}["']`, 'i');
-                match = listHtml.match(epRegex);
-            }
-            if (!match) {
-                var slugRegex = new RegExp(`data-slug=["']${epNum}["'][^>]*data-ids=["']([^"']+)["']`, 'i');
-                match = listHtml.match(slugRegex);
-            }
-            if (!match) {
-                var slugRegex2 = new RegExp(`data-ids=["']([^"']+)["'][^>]*data-slug=["']${epNum}["']`, 'i');
-                match = listHtml.match(slugRegex2);
-            }
-            
-            if (!match) {
-                console.log("Could not find data-ids for ep " + epNum);
-                return [{ url: epUrl, originalUrl: epUrl, quality: "Web", headers: { "Referer": this.baseUrl + "/" } }];
-            }
-            var dataIds = match[1];
+                var dataIdMatch = html.match(/data-id=["'](\d+)["']/);
+                if (!dataIdMatch) {
+                    console.log("No data-id found");
+                    return [];
+                }
+                var animeId = dataIdMatch[1];
 
-            // 3. Fetch the servers list for this episode
+                var epListRes = await this.client.get(this.baseUrl + "/ajax/episode/list/" + animeId, ajaxHeaders);
+                if (epListRes.statusCode !== 200) return [];
+
+                var listData;
+                try { listData = JSON.parse(epListRes.body).result; } catch(e) { listData = epListRes.body; }
+
+                // Match by data-num
+                var epNumMatch = listData.match(new RegExp('data-num=["\']' + epNum + '["\'][^>]*data-ids=["\']([^"\']+)["\']', 'i'));
+                if (!epNumMatch) {
+                    epNumMatch = listData.match(new RegExp('data-ids=["\']([^"\']+)["\'][^>]*data-num=["\']' + epNum + '["\']', 'i'));
+                    if (epNumMatch) dataIds = epNumMatch[1];
+                } else {
+                    dataIds = epNumMatch[1];
+                }
+
+                if (!dataIds) {
+                    console.log("Could not find data-ids for ep " + epNum);
+                    return [];
+                }
+            }
+
+            // Fetch server list for this episode's dataIds
             var serverListRes = await this.client.get(this.baseUrl + "/ajax/server/list?servers=" + encodeURIComponent(dataIds), ajaxHeaders);
             if (serverListRes.statusCode !== 200) return [];
 
-            var serverHtml = "";
-            try {
-                serverHtml = JSON.parse(serverListRes.body).result;
-            } catch(e) { serverHtml = serverListRes.body; }
+            var serverHtml;
+            try { serverHtml = JSON.parse(serverListRes.body).result; } catch(e) { serverHtml = serverListRes.body; }
 
             var linkIdRegex = /data-link-id=["']([^"']+)["'][^>]*>([^<]+)<\/li>/gi;
             var lm;
@@ -339,8 +332,7 @@ class DefaultExtension extends MProvider {
             }
 
             var videos = [];
-            
-            // 4. Resolve the actual embed URL for each server
+
             for (var i = 0; i < servers.length; i++) {
                 var s = servers[i];
                 try {
@@ -358,17 +350,8 @@ class DefaultExtension extends MProvider {
                         }
                     }
                 } catch (err) {
-                    console.log("Error fetching server details for " + s.name + ": " + err);
+                    console.log("Server err " + s.name + ": " + err);
                 }
-            }
-
-            if (videos.length === 0) {
-                videos.push({
-                    url: epUrl,
-                    originalUrl: epUrl,
-                    quality: "Web",
-                    headers: { "Referer": this.baseUrl + "/" }
-                });
             }
 
             console.log("Videos found: " + videos.length);
