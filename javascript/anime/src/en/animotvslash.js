@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.4",
+    "version": "0.0.5",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,
@@ -67,8 +67,9 @@ class DefaultExtension extends MProvider {
     }
 
     // ── Parse article.bs grid cards from listing/search HTML ─────────────────
-    // Cards link to episode pages (/{slug}-episode-{N}/).
-    // We strip -episode-{N} to get the anime slug, then store /anime/{slug}/
+    // Homepage cards link to episode pages (/{slug}-episode-{N}/).
+    // Search results cards link directly to /anime/{slug}/.
+    // Both patterns are supported.
     parseAnimeList(html) {
         var list = [];
         var seen = new Set();
@@ -79,10 +80,18 @@ class DefaultExtension extends MProvider {
         while ((am = articleRx.exec(html)) !== null) {
             var inner = am[1];
 
-            // Href points to episode page: /{anime-slug}-episode-{N}/
-            var hrefM = inner.match(/href=['"](https?:\/\/animotvslash\.org\/([^'"\/]+)-episode-\d+[^'"]*?)['"]/i);
-            if (!hrefM) continue;
-            var slug = hrefM[2];
+            var slug = "";
+
+            // Pattern 1: episode-page link /{slug}-episode-{N}/
+            var epHrefM = inner.match(/href=['"](https?:\/\/animotvslash\.org\/([^'"\/]+)-episode-\d+[^'"]*?)['"]/);
+            if (epHrefM) { slug = epHrefM[2]; }
+
+            // Pattern 2: direct anime-page link /anime/{slug}/  (search results)
+            if (!slug) {
+                var animeHrefM = inner.match(/href=['"](https?:\/\/animotvslash\.org\/anime\/([^'"\/]+)\/)['"]/);
+                if (animeHrefM) { slug = animeHrefM[2]; }
+            }
+
             if (!slug || seen.has(slug)) continue;
             seen.add(slug);
 
