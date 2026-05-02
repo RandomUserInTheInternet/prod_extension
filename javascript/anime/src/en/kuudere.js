@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.6",
+    "version": "0.0.8",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,
@@ -283,7 +283,7 @@ class DefaultExtension extends MProvider {
         if (!prefDubType || prefDubType.length === 0) prefDubType = ["sub", "dub"];
 
         var prefServer = this.getPreference("kuudere_stream_server");
-        if (!prefServer || prefServer.length === 0) prefServer = ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"];
+        if (!prefServer || prefServer.length === 0) prefServer = ["Zen", "Zen-2"];
 
         var list = [];
         if (data.episode_links && Array.isArray(data.episode_links)) {
@@ -404,15 +404,67 @@ class DefaultExtension extends MProvider {
                         for (var i = 0; i < decBytes.length; i++) decryptedUrl += String.fromCharCode(decBytes[i]);
 
                         if (decryptedUrl && decryptedUrl.includes(".m3u8")) {
-                            var videoObj = {
-                                url: decryptedUrl,
-                                originalUrl: decryptedUrl,
-                                quality: quality,
-                                headers: { "Referer": "https://zencloudz.cc/" }
-                            };
                             var allSubs = subtitles.concat(zenSubs);
-                            if (allSubs.length > 0) videoObj.subtitles = allSubs;
-                            list.push(videoObj);
+                            try {
+                                var masterRes = await this.client.get(decryptedUrl, {
+                                    "User-Agent": this.getHeaders()["User-Agent"],
+                                    "Referer": "https://zencloudz.cc/",
+                                    "Accept": "*/*"
+                                });
+                                var masterText = masterRes.body;
+                                if (masterText.includes("RESOLUTION=")) {
+                                    // Add Auto (master playlist)
+                                    var autoObj = {
+                                        url: decryptedUrl,
+                                        originalUrl: decryptedUrl,
+                                        quality: quality + " - Auto",
+                                        headers: { "Referer": "https://zencloudz.cc/" }
+                                    };
+                                    if (allSubs.length > 0) autoObj.subtitles = allSubs;
+                                    list.push(autoObj);
+
+                                    var lines = masterText.split("\n");
+                                    var currentResolution = "";
+                                    for (var i = 0; i < lines.length; i++) {
+                                        var line = lines[i].trim();
+                                        if (line.startsWith("#EXT-X-STREAM-INF:")) {
+                                            var resMatch = line.match(/RESOLUTION=\d+x(\d+)/);
+                                            if (resMatch) currentResolution = resMatch[1] + "p";
+                                        } else if (line.length > 0 && !line.startsWith("#")) {
+                                            var streamUrl = line.startsWith("http") ? line : decryptedUrl.substring(0, decryptedUrl.lastIndexOf("/") + 1) + line;
+                                            var resQuality = quality + (currentResolution ? " - " + currentResolution : "");
+                                            var videoObj = {
+                                                url: streamUrl,
+                                                originalUrl: streamUrl,
+                                                quality: resQuality,
+                                                headers: { "Referer": "https://zencloudz.cc/" }
+                                            };
+                                            if (allSubs.length > 0) videoObj.subtitles = allSubs;
+                                            list.push(videoObj);
+                                            currentResolution = "";
+                                        }
+                                    }
+                                } else {
+                                    var videoObj = {
+                                        url: decryptedUrl,
+                                        originalUrl: decryptedUrl,
+                                        quality: quality,
+                                        headers: { "Referer": "https://zencloudz.cc/" }
+                                    };
+                                    if (allSubs.length > 0) videoObj.subtitles = allSubs;
+                                    list.push(videoObj);
+                                }
+                            } catch (e) {
+                                console.log("M3U8 Parse Error: " + e);
+                                var videoObj = {
+                                    url: decryptedUrl,
+                                    originalUrl: decryptedUrl,
+                                    quality: quality + " (Auto)",
+                                    headers: { "Referer": "https://zencloudz.cc/" }
+                                };
+                                if (allSubs.length > 0) videoObj.subtitles = allSubs;
+                                list.push(videoObj);
+                            }
                             continue;
                         }
                     } catch (e) {
@@ -454,9 +506,9 @@ class DefaultExtension extends MProvider {
                 multiSelectListPreference: {
                     title: "Preferred server",
                     summary: "Choose the server/s you want to extract streams from",
-                    values: ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"],
-                    entries: ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"],
-                    entryValues: ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"],
+                    values: ["Zen", "Zen-2"],
+                    entries: ["Zen", "Zen-2"],
+                    entryValues: ["Zen", "Zen-2"],
                 },
             }
         ];
