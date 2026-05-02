@@ -24,14 +24,14 @@
 
 // ============ Pure JS SHA-256 ============
 var _sha256K = [
-    0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
-    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
-    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
-    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
-    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
-    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
-    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
-    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ];
 function _sha256(msg) {
     var bytes = [];
@@ -46,90 +46,90 @@ function _sha256(msg) {
     while (bytes.length % 64 !== 56) bytes.push(0);
     bytes.push(0, 0, 0, 0);
     bytes.push((bitLen >>> 24) & 0xff, (bitLen >>> 16) & 0xff, (bitLen >>> 8) & 0xff, bitLen & 0xff);
-    var H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
-    function rr(v,n){return(v>>>n)|(v<<(32-n));}
+    var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+    function rr(v, n) { return (v >>> n) | (v << (32 - n)); }
     for (var off = 0; off < bytes.length; off += 64) {
         var W = [];
-        for (var t = 0; t < 16; t++) W[t] = (bytes[off+t*4]<<24)|(bytes[off+t*4+1]<<16)|(bytes[off+t*4+2]<<8)|bytes[off+t*4+3];
+        for (var t = 0; t < 16; t++) W[t] = (bytes[off + t * 4] << 24) | (bytes[off + t * 4 + 1] << 16) | (bytes[off + t * 4 + 2] << 8) | bytes[off + t * 4 + 3];
         for (var t = 16; t < 64; t++) {
-            var s0 = rr(W[t-15],7)^rr(W[t-15],18)^(W[t-15]>>>3);
-            var s1 = rr(W[t-2],17)^rr(W[t-2],19)^(W[t-2]>>>10);
-            W[t] = (W[t-16]+s0+W[t-7]+s1)|0;
+            var s0 = rr(W[t - 15], 7) ^ rr(W[t - 15], 18) ^ (W[t - 15] >>> 3);
+            var s1 = rr(W[t - 2], 17) ^ rr(W[t - 2], 19) ^ (W[t - 2] >>> 10);
+            W[t] = (W[t - 16] + s0 + W[t - 7] + s1) | 0;
         }
-        var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+        var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
         for (var t = 0; t < 64; t++) {
-            var S1=rr(e,6)^rr(e,11)^rr(e,25), ch=(e&f)^(~e&g), t1=(h+S1+ch+_sha256K[t]+W[t])|0;
-            var S0=rr(a,2)^rr(a,13)^rr(a,22), maj=(a&b)^(a&c)^(b&c), t2=(S0+maj)|0;
-            h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+            var S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25), ch = (e & f) ^ (~e & g), t1 = (h + S1 + ch + _sha256K[t] + W[t]) | 0;
+            var S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22), maj = (a & b) ^ (a & c) ^ (b & c), t2 = (S0 + maj) | 0;
+            h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
         }
-        H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;
-        H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
+        H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+        H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
     }
-    var hex='';
-    for (var i=0;i<8;i++) hex+=('00000000'+(H[i]>>>0).toString(16)).slice(-8);
+    var hex = '';
+    for (var i = 0; i < 8; i++) hex += ('00000000' + (H[i] >>> 0).toString(16)).slice(-8);
     return hex;
 }
 
 // ============ Pure JS AES-CBC Decryption ============
-var _SBOX=[99,124,119,123,242,107,111,197,48,1,103,43,254,215,171,118,202,130,201,125,250,89,71,240,173,212,162,175,156,164,114,192,183,253,147,38,54,63,247,204,52,165,229,241,113,216,49,21,4,199,35,195,24,150,5,154,7,18,128,226,235,39,178,117,9,131,44,26,27,110,90,160,82,59,214,179,41,227,47,132,83,209,0,237,32,252,177,91,106,203,190,57,74,76,88,207,208,239,170,251,67,77,51,133,69,249,2,127,80,60,159,168,81,163,64,143,146,157,56,245,188,182,218,33,16,255,243,210,205,12,19,236,95,151,68,23,196,167,126,61,100,93,25,115,96,129,79,220,34,42,144,136,70,238,184,20,222,94,11,219,224,50,58,10,73,6,36,92,194,211,172,98,145,149,228,121,231,200,55,109,141,213,78,169,108,86,244,234,101,122,174,8,186,120,37,46,28,166,180,198,232,221,116,31,75,189,139,138,112,62,181,102,72,3,246,14,97,53,87,185,134,193,29,158,225,248,152,17,105,217,142,148,155,30,135,233,206,85,40,223,140,161,137,13,191,230,66,104,65,153,45,15,176,84,187,22];
-var _ISBOX=new Array(256);for(var _i=0;_i<256;_i++)_ISBOX[_SBOX[_i]]=_i;
-var _RCON=[1,2,4,8,16,32,64,128,27,54];
-function _xtime(a){return((a<<1)^(a&128?0x1b:0))&0xff;}
-function _mul(a,b){var r=0;for(var i=0;i<8;i++){if(b&1)r^=a;a=_xtime(a);b>>=1;}return r;}
-function _aesExpandKey(key){
-    var Nk=key.length/4,Nr=Nk+6,W=new Uint8Array(16*(Nr+1));
-    for(var i=0;i<key.length;i++)W[i]=key[i];
-    for(var i=Nk;i<4*(Nr+1);i++){
-        var t=[W[(i-1)*4],W[(i-1)*4+1],W[(i-1)*4+2],W[(i-1)*4+3]];
-        if(i%Nk===0){var tmp=t[0];t[0]=_SBOX[t[1]]^_RCON[i/Nk-1];t[1]=_SBOX[t[2]];t[2]=_SBOX[t[3]];t[3]=_SBOX[tmp];}
-        else if(Nk>6&&i%Nk===4){t[0]=_SBOX[t[0]];t[1]=_SBOX[t[1]];t[2]=_SBOX[t[2]];t[3]=_SBOX[t[3]];}
-        W[i*4]=W[(i-Nk)*4]^t[0];W[i*4+1]=W[(i-Nk)*4+1]^t[1];W[i*4+2]=W[(i-Nk)*4+2]^t[2];W[i*4+3]=W[(i-Nk)*4+3]^t[3];
+var _SBOX = [99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118, 202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192, 183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21, 4, 199, 35, 195, 24, 150, 5, 154, 7, 18, 128, 226, 235, 39, 178, 117, 9, 131, 44, 26, 27, 110, 90, 160, 82, 59, 214, 179, 41, 227, 47, 132, 83, 209, 0, 237, 32, 252, 177, 91, 106, 203, 190, 57, 74, 76, 88, 207, 208, 239, 170, 251, 67, 77, 51, 133, 69, 249, 2, 127, 80, 60, 159, 168, 81, 163, 64, 143, 146, 157, 56, 245, 188, 182, 218, 33, 16, 255, 243, 210, 205, 12, 19, 236, 95, 151, 68, 23, 196, 167, 126, 61, 100, 93, 25, 115, 96, 129, 79, 220, 34, 42, 144, 136, 70, 238, 184, 20, 222, 94, 11, 219, 224, 50, 58, 10, 73, 6, 36, 92, 194, 211, 172, 98, 145, 149, 228, 121, 231, 200, 55, 109, 141, 213, 78, 169, 108, 86, 244, 234, 101, 122, 174, 8, 186, 120, 37, 46, 28, 166, 180, 198, 232, 221, 116, 31, 75, 189, 139, 138, 112, 62, 181, 102, 72, 3, 246, 14, 97, 53, 87, 185, 134, 193, 29, 158, 225, 248, 152, 17, 105, 217, 142, 148, 155, 30, 135, 233, 206, 85, 40, 223, 140, 161, 137, 13, 191, 230, 66, 104, 65, 153, 45, 15, 176, 84, 187, 22];
+var _ISBOX = new Array(256); for (var _i = 0; _i < 256; _i++)_ISBOX[_SBOX[_i]] = _i;
+var _RCON = [1, 2, 4, 8, 16, 32, 64, 128, 27, 54];
+function _xtime(a) { return ((a << 1) ^ (a & 128 ? 0x1b : 0)) & 0xff; }
+function _mul(a, b) { var r = 0; for (var i = 0; i < 8; i++) { if (b & 1) r ^= a; a = _xtime(a); b >>= 1; } return r; }
+function _aesExpandKey(key) {
+    var Nk = key.length / 4, Nr = Nk + 6, W = new Uint8Array(16 * (Nr + 1));
+    for (var i = 0; i < key.length; i++)W[i] = key[i];
+    for (var i = Nk; i < 4 * (Nr + 1); i++) {
+        var t = [W[(i - 1) * 4], W[(i - 1) * 4 + 1], W[(i - 1) * 4 + 2], W[(i - 1) * 4 + 3]];
+        if (i % Nk === 0) { var tmp = t[0]; t[0] = _SBOX[t[1]] ^ _RCON[i / Nk - 1]; t[1] = _SBOX[t[2]]; t[2] = _SBOX[t[3]]; t[3] = _SBOX[tmp]; }
+        else if (Nk > 6 && i % Nk === 4) { t[0] = _SBOX[t[0]]; t[1] = _SBOX[t[1]]; t[2] = _SBOX[t[2]]; t[3] = _SBOX[t[3]]; }
+        W[i * 4] = W[(i - Nk) * 4] ^ t[0]; W[i * 4 + 1] = W[(i - Nk) * 4 + 1] ^ t[1]; W[i * 4 + 2] = W[(i - Nk) * 4 + 2] ^ t[2]; W[i * 4 + 3] = W[(i - Nk) * 4 + 3] ^ t[3];
     }
-    return {w:W,nr:Nr};
+    return { w: W, nr: Nr };
 }
-function _aesDecryptBlock(block,ek){
-    var s=new Uint8Array(16),Nr=ek.nr,W=ek.w;
-    for(var i=0;i<16;i++)s[i]=block[i]^W[Nr*16+i];
-    for(var r=Nr-1;r>=0;r--){
-        var t=s[13];s[13]=s[9];s[9]=s[5];s[5]=s[1];s[1]=t;
-        t=s[10];s[10]=s[2];s[2]=t;t=s[14];s[14]=s[6];s[6]=t;
-        t=s[3];s[3]=s[7];s[7]=s[11];s[11]=s[15];s[15]=t;
-        for(var i=0;i<16;i++)s[i]=_ISBOX[s[i]];
-        for(var i=0;i<16;i++)s[i]^=W[r*16+i];
-        if(r>0){
-            var ns=new Uint8Array(16);
-            for(var c=0;c<4;c++){
-                var j=c*4;
-                ns[j]=_mul(14,s[j])^_mul(11,s[j+1])^_mul(13,s[j+2])^_mul(9,s[j+3]);
-                ns[j+1]=_mul(9,s[j])^_mul(14,s[j+1])^_mul(11,s[j+2])^_mul(13,s[j+3]);
-                ns[j+2]=_mul(13,s[j])^_mul(9,s[j+1])^_mul(14,s[j+2])^_mul(11,s[j+3]);
-                ns[j+3]=_mul(11,s[j])^_mul(13,s[j+1])^_mul(9,s[j+2])^_mul(14,s[j+3]);
+function _aesDecryptBlock(block, ek) {
+    var s = new Uint8Array(16), Nr = ek.nr, W = ek.w;
+    for (var i = 0; i < 16; i++)s[i] = block[i] ^ W[Nr * 16 + i];
+    for (var r = Nr - 1; r >= 0; r--) {
+        var t = s[13]; s[13] = s[9]; s[9] = s[5]; s[5] = s[1]; s[1] = t;
+        t = s[10]; s[10] = s[2]; s[2] = t; t = s[14]; s[14] = s[6]; s[6] = t;
+        t = s[3]; s[3] = s[7]; s[7] = s[11]; s[11] = s[15]; s[15] = t;
+        for (var i = 0; i < 16; i++)s[i] = _ISBOX[s[i]];
+        for (var i = 0; i < 16; i++)s[i] ^= W[r * 16 + i];
+        if (r > 0) {
+            var ns = new Uint8Array(16);
+            for (var c = 0; c < 4; c++) {
+                var j = c * 4;
+                ns[j] = _mul(14, s[j]) ^ _mul(11, s[j + 1]) ^ _mul(13, s[j + 2]) ^ _mul(9, s[j + 3]);
+                ns[j + 1] = _mul(9, s[j]) ^ _mul(14, s[j + 1]) ^ _mul(11, s[j + 2]) ^ _mul(13, s[j + 3]);
+                ns[j + 2] = _mul(13, s[j]) ^ _mul(9, s[j + 1]) ^ _mul(14, s[j + 2]) ^ _mul(11, s[j + 3]);
+                ns[j + 3] = _mul(11, s[j]) ^ _mul(13, s[j + 1]) ^ _mul(9, s[j + 2]) ^ _mul(14, s[j + 3]);
             }
-            s=ns;
+            s = ns;
         }
     }
     return s;
 }
-function _aesDecryptCBC(ct,key,iv){
-    var ek=_aesExpandKey(key),out=[];
-    var prev=iv;
-    for(var off=0;off<ct.length;off+=16){
-        var block=ct.slice(off,off+16);
-        var dec=_aesDecryptBlock(block,ek);
-        for(var i=0;i<16;i++)dec[i]^=prev[i];
-        for(var i=0;i<16;i++)out.push(dec[i]);
-        prev=block;
+function _aesDecryptCBC(ct, key, iv) {
+    var ek = _aesExpandKey(key), out = [];
+    var prev = iv;
+    for (var off = 0; off < ct.length; off += 16) {
+        var block = ct.slice(off, off + 16);
+        var dec = _aesDecryptBlock(block, ek);
+        for (var i = 0; i < 16; i++)dec[i] ^= prev[i];
+        for (var i = 0; i < 16; i++)out.push(dec[i]);
+        prev = block;
     }
-    var pad=out[out.length-1];
-    if(pad>0&&pad<=16){var valid=true;for(var i=0;i<pad;i++)if(out[out.length-1-i]!==pad)valid=false;if(valid)out.splice(out.length-pad,pad);}
+    var pad = out[out.length - 1];
+    if (pad > 0 && pad <= 16) { var valid = true; for (var i = 0; i < pad; i++)if (out[out.length - 1 - i] !== pad) valid = false; if (valid) out.splice(out.length - pad, pad); }
     return out;
 }
-function _b64Decode(str){
-    var chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    var out=[];str=str.replace(/[=]+$/,'');
-    for(var i=0,b=0,bits=0;i<str.length;i++){
-        b=(b<<6)|chars.indexOf(str[i]);bits+=6;
-        while(bits>=8){bits-=8;out.push((b>>bits)&0xff);}
+function _b64Decode(str) {
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    var out = []; str = str.replace(/[=]+$/, '');
+    for (var i = 0, b = 0, bits = 0; i < str.length; i++) {
+        b = (b << 6) | chars.indexOf(str[i]); bits += 6;
+        while (bits >= 8) { bits -= 8; out.push((b >> bits) & 0xff); }
     }
     return new Uint8Array(out);
 }
@@ -142,7 +142,7 @@ class DefaultExtension extends MProvider {
     }
 
     getPreference(key) {
-        try { return new SharedPreferences().get(key); } catch(e) { return null; }
+        try { return new SharedPreferences().get(key); } catch (e) { return null; }
     }
 
     getHeaders() {
@@ -223,7 +223,7 @@ class DefaultExtension extends MProvider {
                 });
             }
             return { list: list, hasNextPage: data.hasMore || false };
-        } catch(e) {
+        } catch (e) {
             console.log("Kuudere [!]" + e);
             return { list: [], hasNextPage: false };
         }
@@ -261,7 +261,7 @@ class DefaultExtension extends MProvider {
             }
 
             // Sort DESCENDING by episode number (newest first)
-            chapters.sort(function(a, b) {
+            chapters.sort(function (a, b) {
                 var na = parseInt(a.url.split("/").pop()) || 0;
                 var nb = parseInt(b.url.split("/").pop()) || 0;
                 return nb - na;
@@ -354,15 +354,15 @@ class DefaultExtension extends MProvider {
                         var eStr = _sha256(seed);
                         var sStr = _sha256(eStr);
 
-                        var tokenField = eStr.substring(48,64) + '_' + eStr.substring(56,64);
-                        var keyFrag2Field = sStr.substring(0,16) + '_' + sStr.substring(16,24);
-                        var containerName = "cd_" + eStr.substring(24,32);
-                        var arrayName = "ad_" + eStr.substring(32,40);
-                        var objectName = "od_" + eStr.substring(40,48);
-                        var keyField = "kf_" + eStr.substring(8,16);
-                        var ivField = "ivf_" + eStr.substring(16,24);
+                        var tokenField = eStr.substring(48, 64) + '_' + eStr.substring(56, 64);
+                        var keyFrag2Field = sStr.substring(0, 16) + '_' + sStr.substring(16, 24);
+                        var containerName = "cd_" + eStr.substring(24, 32);
+                        var arrayName = "ad_" + eStr.substring(32, 40);
+                        var objectName = "od_" + eStr.substring(40, 48);
+                        var keyField = "kf_" + eStr.substring(8, 16);
+                        var ivField = "ivf_" + eStr.substring(16, 24);
 
-                        var oHashParam = parseInt(seed.substring(0,8), 16);
+                        var oHashParam = parseInt(seed.substring(0, 8), 16);
 
                         var tokenId = decoded[tokenField];
                         var frag2B64 = decoded[keyFrag2Field];
