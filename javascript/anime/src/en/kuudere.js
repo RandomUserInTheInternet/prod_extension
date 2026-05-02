@@ -146,6 +146,10 @@ class DefaultExtension extends MProvider {
         this.client = new Client();
     }
 
+    getPreference(key) {
+        return new SharedPreferences().get(key);
+    }
+
     getHeaders() {
         return {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -322,11 +326,49 @@ class DefaultExtension extends MProvider {
         var res = await this.client.get(`https://kuudere.to/api/watch/${url}`, this.getHeaders());
         var data = JSON.parse(res.body);
         
+        var prefDubType = this.getPreference("kuudere_stream_subdub_type");
+        if (!prefDubType || prefDubType.length === 0) prefDubType = ["sub", "dub"];
+        
+        var prefServer = this.getPreference("kuudere_stream_server");
+        if (!prefServer || prefServer.length === 0) prefServer = ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"];
+        
         var list = [];
         if (data.episode_links && Array.isArray(data.episode_links)) {
             for (var link of data.episode_links) {
+                if (!prefServer.includes(link.serverName)) continue;
+                if (!prefDubType.includes(link.dataType)) continue;
+                
                 var originalUrl = link.dataLink;
                 var quality = link.serverName + " (" + link.dataType + ")";
+                
+                var subtitles = [];
+                if (originalUrl.includes("?")) {
+                    var queryStr = originalUrl.split("?")[1];
+                    var params = queryStr.split("&");
+                    var captionMap = {};
+                    var subMap = {};
+                    for (var i = 0; i < params.length; i++) {
+                        var kv = params[i].split("=");
+                        if (kv.length !== 2) continue;
+                        var k = decodeURIComponent(kv[0]);
+                        var v = decodeURIComponent(kv[1]);
+                        if (k.startsWith("caption_")) {
+                            var idx = k.split("_")[1];
+                            captionMap[idx] = v;
+                        } else if (k.startsWith("sub_")) {
+                            var idx = k.split("_")[1];
+                            subMap[idx] = v;
+                        }
+                    }
+                    for (var idx in captionMap) {
+                        var label = subMap[idx] || "Subtitle " + idx;
+                        if (!label.toLowerCase().includes("eng")) continue;
+                        subtitles.push({
+                            file: captionMap[idx],
+                            label: label
+                        });
+                    }
+                }
                 
                 if (originalUrl.includes("zencloudz.cc/e/")) {
                     try {
@@ -351,6 +393,20 @@ class DefaultExtension extends MProvider {
                         
                         var decoded = this.unflatten(0, dataArray);
                         var seed = decoded.obfuscation_seed;
+                        
+                        var zenSubs = [];
+                        if (decoded.subtitles && Array.isArray(decoded.subtitles)) {
+                            for (var sub of decoded.subtitles) {
+                                if (sub && sub.url && sub.language) {
+                                    if (!sub.language.toLowerCase().includes("eng")) continue;
+                                    zenSubs.push({
+                                        file: sub.url,
+                                        label: sub.language
+                                    });
+                                }
+                            }
+                        }
+                        
                         if (!seed) continue;
                         
                         var eStr = _sha256(seed);
@@ -408,12 +464,18 @@ class DefaultExtension extends MProvider {
                         for (var i = 0; i < decBytes.length; i++) decryptedUrl += String.fromCharCode(decBytes[i]);
                         
                         if (decryptedUrl && decryptedUrl.includes(".m3u8")) {
-                            list.push({
+                            var videoObj = {
                                 url: decryptedUrl,
                                 originalUrl: decryptedUrl,
                                 quality: quality,
                                 headers: { "Referer": "https://zencloudz.cc/" }
-                            });
+                            };
+                            
+                            // Combine embed subtitles and zencloudz native subtitles
+                            var allSubs = subtitles.concat(zenSubs);
+                            if (allSubs.length > 0) videoObj.subtitles = allSubs;
+                            
+                            list.push(videoObj);
                             continue;
                         }
                     } catch (e) {
@@ -421,12 +483,14 @@ class DefaultExtension extends MProvider {
                     }
                 }
                 
-                list.push({
+                var fallbackObj = {
                     url: originalUrl,
                     originalUrl: originalUrl,
                     quality: quality + " (Embed)",
                     headers: this.getHeaders()
-                });
+                };
+                if (subtitles.length > 0) fallbackObj.subtitles = subtitles;
+                list.push(fallbackObj);
             }
         }
         return list;
@@ -434,6 +498,29 @@ class DefaultExtension extends MProvider {
 
     async getPageList(url) { return []; }
     getFilterList() { return []; }
-    getSourcePreferences() { return []; }
+    
+    getSourcePreferences() {
+        return [
+            {
+                key: "kuudere_stream_subdub_type",
+                multiSelectListPreference: {
+                    title: "Preferred stream sub/dub type",
+                    summary: "Choose the types of streams you want to see",
+                    values: ["sub", "dub"],
+                    entries: ["Sub", "Dub"],
+                    entryValues: ["sub", "dub"],
+                },
+            },
+            {
+                key: "kuudere_stream_server",
+                multiSelectListPreference: {
+                    title: "Preferred server",
+                    summary: "Choose the server/s you want to extract streams from",
+                    values: ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"],
+                    entries: ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"],
+                    entryValues: ["Zen", "Zen-2", "Streamwish", "Vidhide", "Mp4upload", "S-Wish", "S-Hide"],
+                },
+            }
+        ];
+    }
 }
-
