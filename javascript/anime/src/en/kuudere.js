@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "Kuudere",
+    "name": "Kuudere [Buggy]",
     "lang": "en",
     "baseUrl": "https://kuudere.to",
     "apiUrl": "https://kuudere.to",
@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.8",
+    "version": "0.0.9",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,

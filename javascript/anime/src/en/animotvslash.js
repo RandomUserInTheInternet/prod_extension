@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "AnimoTVSlash",
+    "name": "AnimoTVSlash [Buggy]",
     "lang": "en",
     "baseUrl": "https://animotvslash.org",
     "apiUrl": "",
@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.6",
+    "version": "0.0.7",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,

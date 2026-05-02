@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "AniHQ",
+    "name": "AniHQ [Not Working]",
     "lang": "en",
     "baseUrl": "https://anihq.org",
     "apiUrl": "https://anihq.org/wp-json/wp/v2",
@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.3",
+    "version": "0.0.4",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,

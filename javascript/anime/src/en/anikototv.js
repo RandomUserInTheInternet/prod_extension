@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "AniKoto",
+    "name": "AniKoto [Not Working]",
     "lang": "en",
     "baseUrl": "https://anikototv.to",
     "apiUrl": "",
@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.3",
+    "version": "0.0.4",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,
