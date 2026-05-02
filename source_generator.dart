@@ -16,13 +16,19 @@ void main() {
   genNovel(
     jsSources.where((element) => element.itemType!.name == "novel").toList(),
   );
+  genIndex(jsSources);
 }
 
 void genManga(List<Source> jsMangasourceList) {
-  List<Source> mangaSources = [];
-  mangaSources.addAll(dartMangasourceList);
-  mangaSources.addAll(jsMangasourceList);
-  final List<Map<String, dynamic>> jsonList = mangaSources
+  // Not used anymore, kept for backwards compatibility or renamed to genIndex.
+}
+
+void genIndex(List<Source> jsSources) {
+  List<Source> sources = [];
+  sources.addAll(dartMangasourceList);
+  sources.addAll(dartNovelSourceList);
+  sources.addAll(jsSources);
+  final List<Map<String, dynamic>> jsonList = sources
       .map((source) => source.toJson())
       .toList();
   final jsonString = jsonEncode(jsonList);
