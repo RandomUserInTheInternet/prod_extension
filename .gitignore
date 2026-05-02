@@ -1,0 +1,9 @@
+scratch_*
+test_*
+patch_*
+verify.js
+*.wasm
+*.vtt
+FOR CRETING NEW EXTENSION
+SCRAPLING_GUIDE.md
+kuudere_api_data.md
