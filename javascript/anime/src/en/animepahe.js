@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "AnimePahe",
+    "name": "AnimePahe [Prod]",
     "lang": "en",
     "baseUrl": "https://animepahe.pw",
     "apiUrl": "",
@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.5",
+    "version": "0.0.6",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,

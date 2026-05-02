@@ -1,5 +1,5 @@
 const mangayomiSources = [{
-    "name": "KickAssAnime",
+    "name": "KickAssAnime [Prod]",
     "lang": "en",
     "baseUrl": "https://kaa.lt",
     "apiUrl": "",
@@ -7,7 +7,7 @@ const mangayomiSources = [{
     "typeSource": "single",
     "isManga": false,
     "itemType": 1,
-    "version": "0.0.3",
+    "version": "0.0.4",
     "dateFormat": "",
     "dateFormatLocale": "",
     "isNsfw": false,
