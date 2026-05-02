@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "AniBD [Not Working]",
+﻿const mangayomiSources = [{
+    "name": "AniBD [X]",
     "lang": "en",
     "baseUrl": "https://anibd.app",
     "apiUrl": "https://eng.animeapps.top/api",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 738291456,
-    "notes": "AniBD - BD/Uncensored anime streaming with direct m3u8",
+    "notes": "AniBD [X]",
     "pkgPath": "anime/src/en/anibd.js"
 }];
 
@@ -93,7 +93,7 @@ class DefaultExtension extends MProvider {
         var genre = [];
         var status = 0;
 
-        // Use AniList GraphQL API for metadata — avoids timing out on anibd.app HTML
+        // Use AniList GraphQL API for metadata â€” avoids timing out on anibd.app HTML
         if (anilistId && anilistId !== "0") {
             try {
                 var query = `{\n  Media(id: ${anilistId}, type: ANIME) {\n    title { romaji english native }\n    description(asHtml: false)\n    coverImage { large medium }\n    genres\n    status\n  }\n}`;
@@ -220,7 +220,7 @@ class DefaultExtension extends MProvider {
                 }];
             }
         } catch (e) {
-            console.log("AniBD embed extraction error: " + e);
+            console.log("AniBD [X]" + e);
         }
 
         return [];
@@ -230,3 +230,4 @@ class DefaultExtension extends MProvider {
     getFilterList() { return []; }
     getSourcePreferences() { return []; }
 }
+

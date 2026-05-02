@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "AniHQ [Not Working]",
+﻿const mangayomiSources = [{
+    "name": "AniHQ [X]",
     "lang": "en",
     "baseUrl": "https://anihq.org",
     "apiUrl": "https://anihq.org/wp-json/wp/v2",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 982138761,
-    "notes": "AniHQ anime streaming with Voe extraction",
+    "notes": "AniHQ [X]",
     "pkgPath": "anime/src/en/anihq.js"
 }];
 
@@ -271,7 +271,7 @@ class DefaultExtension extends MProvider {
             }
 
         } else {
-            // Unknown embed — return raw iframe URL
+            // Unknown embed â€” return raw iframe URL
             videos.push({
                 url: iframeUrl,
                 originalUrl: iframeUrl,
@@ -287,3 +287,4 @@ class DefaultExtension extends MProvider {
     getFilterList() { return []; }
     getSourcePreferences() { return []; }
 }
+

@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "AniKoto [Not Working]",
+﻿const mangayomiSources = [{
+    "name": "AniKoto [X]",
     "lang": "en",
     "baseUrl": "https://anikototv.to",
     "apiUrl": "",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 561837294,
-    "notes": "AniKoto - Zoro platform. Providers: megaplay.buzz (Vidstream) & vidwish.live (VidCloud). AJAX chain: /ajax/episode/list -> /ajax/server/list -> /ajax/server -> embed URL + cid-signed sources API.",
+    "notes": "AniKoto [X]",
     "pkgPath": "anime/src/en/anikototv.js"
 }];
 
@@ -37,7 +37,7 @@ class DefaultExtension extends MProvider {
         };
     }
 
-    // ── Parse anime list cards ────────────────────────────────────────────────
+    // â”€â”€ Parse anime list cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     parseAnimeList(html) {
         var list = [];
         var seen = new Set();
@@ -128,7 +128,7 @@ class DefaultExtension extends MProvider {
         return await this.fetchListing(this.baseUrl + "/filter?keyword=" + encodeURIComponent(query) + (page > 1 ? "&page=" + page : ""));
     }
 
-    // ── getDetail ─────────────────────────────────────────────────────────────
+    // â”€â”€ getDetail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // url = slug like "naruto-shippuden-c8gov"
     async getDetail(url) {
         var slug = url;
@@ -211,21 +211,21 @@ class DefaultExtension extends MProvider {
                 return parseInt((a.url.split("||")[1] || "0"), 10) - parseInt((b.url.split("||")[1] || "0"), 10);
             });
 
-            console.log("AniKoto detail: " + name + ", " + chapters.length + " eps");
+            console.log("AniKoto [X]" + name + ", " + chapters.length + " eps");
         } catch(e) {
-            console.log("AniKoto getDetail error: " + e);
+            console.log("AniKoto [X]" + e);
         }
         return { name, imageUrl, description, genre, status, chapters };
     }
 
-    // ── getVideoList ──────────────────────────────────────────────────────────
+    // â”€â”€ getVideoList â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // url format: "{slug}||{epNum}||{dataIds}"
     //
     // Confirmed stream chain (verified via Scrapling + DevTools):
-    //  1. /ajax/server/list?servers={dataIds} → li with data-link-id
-    //  2. /ajax/server?get={linkId}           → { result: { url: "https://megaplay.buzz/stream/s-2/{id}/sub" } }
-    //  3. Fetch embed page                    → data-id="{internal}", cid="{token}", cidu="{token2}"
-    //  4. {host}/api/source/{internal}?cid={token} → JSON { sources:[{file:"...m3u8"}] }
+    //  1. /ajax/server/list?servers={dataIds} â†’ li with data-link-id
+    //  2. /ajax/server?get={linkId}           â†’ { result: { url: "https://megaplay.buzz/stream/s-2/{id}/sub" } }
+    //  3. Fetch embed page                    â†’ data-id="{internal}", cid="{token}", cidu="{token2}"
+    //  4. {host}/api/source/{internal}?cid={token} â†’ JSON { sources:[{file:"...m3u8"}] }
     //     (cid is required; if missing we fall back to passing embed URL directly)
     async getVideoList(url) {
         var parts = url.split("||");
@@ -233,14 +233,14 @@ class DefaultExtension extends MProvider {
         var epNum = parts[1] || "1";
         var cachedDataIds = parts[2] || "";
 
-        console.log("AniKoto getVideoList ep" + epNum + ": " + slug);
+        console.log("AniKoto [X]" + epNum + ": " + slug);
 
         try {
             var headers = this.getHeaders();
             var ajaxHeaders = Object.assign({}, headers, { "X-Requested-With": "XMLHttpRequest" });
             var dataIds = cachedDataIds;
 
-            // ── Step 0: Resolve dataIds if not cached ────────────────────────
+            // â”€â”€ Step 0: Resolve dataIds if not cached â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if (!dataIds) {
                 var epUrl = this.baseUrl + "/watch/" + slug + "/ep-" + epNum;
                 var res = await this.client.get(epUrl, headers);
@@ -261,7 +261,7 @@ class DefaultExtension extends MProvider {
                 dataIds = epNumMatch[1];
             }
 
-            // ── Step 1: Get server list ──────────────────────────────────────
+            // â”€â”€ Step 1: Get server list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             var serverListRes = await this.client.get(
                 this.baseUrl + "/ajax/server/list?servers=" + encodeURIComponent(dataIds), ajaxHeaders);
             if (serverListRes.statusCode !== 200) { console.log("Server list failed: " + serverListRes.statusCode); return []; }
@@ -281,7 +281,7 @@ class DefaultExtension extends MProvider {
             for (var i = 0; i < servers.length; i++) {
                 var s = servers[i];
                 try {
-                    // ── Step 2: Get embed URL ────────────────────────────────
+                    // â”€â”€ Step 2: Get embed URL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     var serverRes = await this.client.get(
                         this.baseUrl + "/ajax/server?get=" + s.id, ajaxHeaders);
                     if (serverRes.statusCode !== 200) continue;
@@ -290,7 +290,7 @@ class DefaultExtension extends MProvider {
                     var embedUrl = serverData.result.url;
                     console.log("AniKoto: " + s.name + " => " + embedUrl);
 
-                    // ── Step 3: Fetch embed page for cid token ───────────────
+                    // â”€â”€ Step 3: Fetch embed page for cid token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     var hostMatch = embedUrl.match(/^(https?:\/\/[^\/]+)/);
                     if (!hostMatch) {
                         videos.push({ url: embedUrl, originalUrl: embedUrl, quality: "Embed - " + s.name, headers: { "Referer": this.baseUrl + "/" } });
@@ -300,7 +300,7 @@ class DefaultExtension extends MProvider {
 
                     var embedRes = await this.client.get(embedUrl, { "Referer": this.baseUrl + "/", "User-Agent": headers["User-Agent"] });
                     if (embedRes.statusCode !== 200 || !embedRes.body.includes("data-id=")) {
-                        // Error page or wrong content — return embed URL as fallback
+                        // Error page or wrong content â€” return embed URL as fallback
                         videos.push({ url: embedUrl, originalUrl: embedUrl, quality: "Embed - " + s.name, headers: { "Referer": this.baseUrl + "/" } });
                         continue;
                     }
@@ -314,9 +314,9 @@ class DefaultExtension extends MProvider {
                     var cid = cidM ? cidM[1] : "";
                     var cidu = ciduM ? ciduM[1] : "";
 
-                    console.log("AniKoto embed: id=" + internalId + " cid=" + cid + " cidu=" + cidu);
+                    console.log("AniKoto [X]" + internalId + " cid=" + cid + " cidu=" + cidu);
 
-                    // ── Step 4: Try sources API with cid token ───────────────
+                    // â”€â”€ Step 4: Try sources API with cid token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     var srcAdded = false;
                     if (internalId && cid) {
                         var cidParam = "?cid=" + encodeURIComponent(cid) + (cidu ? "&cidu=" + encodeURIComponent(cidu) : "");
@@ -363,14 +363,14 @@ class DefaultExtension extends MProvider {
                         });
                     }
                 } catch (err) {
-                    console.log("AniKoto server " + s.name + " error: " + err);
+                    console.log("AniKoto [X]" + s.name + " error: " + err);
                 }
             }
 
-            console.log("AniKoto total videos: " + videos.length);
+            console.log("AniKoto [X]" + videos.length);
             return videos;
         } catch(e) {
-            console.log("AniKoto getVideoList error: " + e);
+            console.log("AniKoto [X]" + e);
             return [];
         }
     }
@@ -393,3 +393,4 @@ class DefaultExtension extends MProvider {
         ];
     }
 }
+

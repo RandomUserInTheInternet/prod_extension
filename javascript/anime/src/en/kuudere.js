@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "Kuudere [Buggy]",
+﻿const mangayomiSources = [{
+    "name": "Kuudere [!]",
     "lang": "en",
     "baseUrl": "https://kuudere.to",
     "apiUrl": "https://kuudere.to",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 847291854,
-    "notes": "Kuudere - Anime streaming with ZenCloudz extraction. Uses /api/search for relevance-ranked results.",
+    "notes": "Kuudere [!]",
     "pkgPath": "anime/src/en/kuudere.js"
 }];
 
@@ -205,7 +205,7 @@ class DefaultExtension extends MProvider {
 
     // FIX: Use /api/search which returns relevance-ranked results.
     // The old __data.json endpoint returned 446+ results sorted by global popularity,
-    // so "Witch Hat Atelier" search returned Frieren first — completely wrong match.
+    // so "Witch Hat Atelier" search returned Frieren first â€” completely wrong match.
     async search(query, page, filters) {
         try {
             var res = await this.client.get(
@@ -224,13 +224,13 @@ class DefaultExtension extends MProvider {
             }
             return { list: list, hasNextPage: data.hasMore || false };
         } catch(e) {
-            console.log("Kuudere search error: " + e);
+            console.log("Kuudere [!]" + e);
             return { list: [], hasNextPage: false };
         }
     }
 
     // Episodes returned DESCENDING (newest first).
-    // Nuord app does .reversed.toList() → ep1 at index 0 → Anify alignment correct.
+    // Nuord app does .reversed.toList() â†’ ep1 at index 0 â†’ Anify alignment correct.
     async getDetail(url) {
         try {
             var res = await this.client.get("https://kuudere.to/api/watch/" + url + "/1", this.getHeaders());
@@ -270,7 +270,7 @@ class DefaultExtension extends MProvider {
             return { name, imageUrl, description, genre, status, chapters };
 
         } catch (e) {
-            console.log("Kuudere getDetail error: " + e);
+            console.log("Kuudere [!]" + e);
             return { name: "", imageUrl: "", description: "", genre: [], status: 0, chapters: [] };
         }
     }
@@ -468,7 +468,7 @@ class DefaultExtension extends MProvider {
                             continue;
                         }
                     } catch (e) {
-                        console.log("Kuudere ZenCloudz error: " + e);
+                        console.log("Kuudere [!]" + e);
                     }
                 }
 
@@ -514,3 +514,4 @@ class DefaultExtension extends MProvider {
         ];
     }
 }
+

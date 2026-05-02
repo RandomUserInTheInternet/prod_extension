@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "AnimoTVSlash [Buggy]",
+﻿const mangayomiSources = [{
+    "name": "AnimoTVSlash [!]",
     "lang": "en",
     "baseUrl": "https://animotvslash.org",
     "apiUrl": "",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 619273840,
-    "notes": "AnimoTVSlash - ANIMO-M server only. Episodes returned descending for Nuord app compatibility.",
+    "notes": "AnimoTVSlash [!]",
     "pkgPath": "anime/src/en/animotvslash.js"
 }];
 
@@ -37,7 +37,7 @@ class DefaultExtension extends MProvider {
         };
     }
 
-    // ── Base64 decoder (Mangayomi has no native atob) ─────────────────────────
+    // â”€â”€ Base64 decoder (Mangayomi has no native atob) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     decodeBase64(b64) {
         var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         var output = "";
@@ -55,7 +55,7 @@ class DefaultExtension extends MProvider {
         return output;
     }
 
-    // ── Parse anime grid cards from listing or search HTML ────────────────────
+    // â”€â”€ Parse anime grid cards from listing or search HTML â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Homepage: cards use episode-page hrefs  /{slug}-episode-{N}/
     // Search:   cards use direct anime hrefs  /anime/{slug}/
     // Both patterns are handled.
@@ -82,12 +82,12 @@ class DefaultExtension extends MProvider {
             if (!slug || seen.has(slug)) continue;
             seen.add(slug);
 
-            // Image — try src, data-src, data-lazy-src; ensure absolute URL
+            // Image â€” try src, data-src, data-lazy-src; ensure absolute URL
             var imgM2 = inner.match(/<img[^>]+(?:src|data-src|data-lazy-src)=['"]([^'"]+)['"]/i);
             var imageUrl = imgM2 ? imgM2[1].trim() : "";
             if (imageUrl && !imageUrl.startsWith("http")) imageUrl = "";
 
-            // Title — prefer .tt div, fall back to img alt
+            // Title â€” prefer .tt div, fall back to img alt
             var ttM = inner.match(/class=["'][^"']*\btt\b[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|span|h2|h3)>/i);
             var name = "";
             if (ttM) { name = ttM[1].replace(/<[^>]+>/g, "").trim(); }
@@ -110,7 +110,7 @@ class DefaultExtension extends MProvider {
             var hasNextPage = /href=['"]https?:\/\/animotvslash\.org\/page\/\d+\/['"]/i.test(res.body);
             return { list, hasNextPage };
         } catch(e) {
-            console.log("AnimoTVSlash fetchListing error: " + e);
+            console.log("AnimoTVSlash [!]" + e);
             return { list: [], hasNextPage: false };
         }
     }
@@ -128,7 +128,7 @@ class DefaultExtension extends MProvider {
         return await this.fetchListing(url);
     }
 
-    // ── getDetail ──────────────────────────────────────────────────────────────
+    // â”€â”€ getDetail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // CRITICAL: Episodes are returned DESCENDING (newest first).
     // The Nuord WatchScreen does .reversed.toList() on the result, which produces
     // ascending order with Episode 1 at index 0. This aligns Anify metadata correctly.
@@ -189,10 +189,10 @@ class DefaultExtension extends MProvider {
                 chapters.push({ name: "Episode " + epNum, url: epHref });
             }
 
-            // ── Sort DESCENDING (ep5, ep4, ep3, ep2, ep1) ────────────────────
+            // â”€â”€ Sort DESCENDING (ep5, ep4, ep3, ep2, ep1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             // The Nuord app calls .reversed.toList() on the episodes array.
             // Returning descending here means after reversal:
-            //   index 0 = Episode 1  ← correct for Anify metadata alignment
+            //   index 0 = Episode 1  â† correct for Anify metadata alignment
             //   index 1 = Episode 2
             //   ...etc
             chapters.sort((a, b) => {
@@ -209,12 +209,12 @@ class DefaultExtension extends MProvider {
                 }
             }
 
-        } catch(e) { console.log("AnimoTVSlash getDetail error: " + e); }
+        } catch(e) { console.log("AnimoTVSlash [!]" + e); }
 
         return { name, imageUrl, description, genre, status, chapters };
     }
 
-    // ── getVideoList ───────────────────────────────────────────────────────────
+    // â”€â”€ getVideoList â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // ANIMO-M server only. Supports jw-player/Rumble HLS + direct iframe fallback.
     async getVideoList(url) {
         var videos = [];
@@ -244,7 +244,7 @@ class DefaultExtension extends MProvider {
                 var dataType = typeMatch ? typeMatch[1] : "Sub";
                 var quality = "ANIMO-M (" + dataType + ")";
 
-                // Decode the base64 option value → iframe HTML
+                // Decode the base64 option value â†’ iframe HTML
                 var decodedHtml = this.decodeBase64(om[1]);
                 var iframeM = decodedHtml.match(/src=["']([^"']+)["']/i);
                 if (!iframeM) continue;
@@ -317,7 +317,7 @@ class DefaultExtension extends MProvider {
                 });
             }
 
-        } catch(e) { console.log("AnimoTVSlash getVideoList error: " + e); }
+        } catch(e) { console.log("AnimoTVSlash [!]" + e); }
 
         return videos;
     }
@@ -326,3 +326,4 @@ class DefaultExtension extends MProvider {
     getFilterList() { return []; }
     getSourcePreferences() { return []; }
 }
+

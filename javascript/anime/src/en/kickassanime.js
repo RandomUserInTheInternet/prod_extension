@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "KickAssAnime [Prod]",
+﻿const mangayomiSources = [{
+    "name": "KickAssAnime [OK]",
     "lang": "en",
     "baseUrl": "https://kaa.lt",
     "apiUrl": "",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 723849156,
-    "notes": "KickAssAnime (kaa.lt) with HLS stream extraction from krussdomi.com player",
+    "notes": "KickAssAnime [OK]",
     "pkgPath": "anime/src/en/kickassanime.js"
 }];
 
@@ -61,7 +61,7 @@ class DefaultExtension extends MProvider {
         return JSON.parse(res.body);
     }
 
-    // Search POST — body must be a plain JS object (NOT JSON.stringify).
+    // Search POST â€” body must be a plain JS object (NOT JSON.stringify).
     // Mangayomi's client.post() serializes the object internally.
     // See: novelupdates.js pattern: client.post(url, headers, { key: val })
     async searchPost(query, page) {
@@ -219,7 +219,7 @@ class DefaultExtension extends MProvider {
             console.log("getDetail: " + title + ", " + chapters.length + " episodes");
             return {
                 link: this.baseUrl + "/" + animeSlug,
-                name: title || "KickAssAnime Show",
+                name: title || "KickAssAnime [OK]",
                 imageUrl,
                 description,
                 genre,
@@ -320,7 +320,7 @@ class DefaultExtension extends MProvider {
                 }
             }
 
-            // Sort by preferred quality — put the preferred resolution first
+            // Sort by preferred quality â€” put the preferred resolution first
             var prefQuality = new SharedPreferences().get("preferred_quality") || "1080";
             videos.sort(function(a, b) {
                 var aMatch = (a.quality || "").includes(prefQuality) ? 0 : 1;
@@ -374,3 +374,4 @@ class DefaultExtension extends MProvider {
         ];
     }
 }
+

@@ -1,5 +1,5 @@
-const mangayomiSources = [{
-    "name": "AnimePahe [Prod]",
+﻿const mangayomiSources = [{
+    "name": "AnimePahe [OK]",
     "lang": "en",
     "baseUrl": "https://animepahe.pw",
     "apiUrl": "",
@@ -18,7 +18,7 @@ const mangayomiSources = [{
     "additionalParams": "",
     "sourceCodeLanguage": 1,
     "id": 847392156,
-    "notes": "AnimePahe anime streaming with Kwik video extraction",
+    "notes": "AnimePahe [OK]",
     "pkgPath": "anime/src/en/animepahe.js"
 }];
 
@@ -48,7 +48,7 @@ class DefaultExtension extends MProvider {
         };
     }
 
-    // ── API helper ────────────────────────────────────────────────────────────
+    // â”€â”€ API helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async apiGet(params) {
         var url = this.baseUrl + "/api?" + params;
         console.log("API GET: " + url);
@@ -60,16 +60,16 @@ class DefaultExtension extends MProvider {
         return JSON.parse(res.body);
     }
 
-    // ── Poster URL builder ────────────────────────────────────────────────────
+    // â”€â”€ Poster URL builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     buildPoster(poster) {
         if (!poster) return "";
         if (poster.startsWith("http")) return poster;
         return this.baseUrl + poster;
     }
 
-    // ── getPopular (uses airing endpoint) ─────────────────────────────────────
+    // â”€â”€ getPopular (uses airing endpoint) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async getPopular(page) {
-        console.log("AnimePahe getPopular page=" + page);
+        console.log("AnimePahe [OK]" + page);
         try {
             var data = await this.apiGet("m=airing&page=" + page);
             var list = [];
@@ -90,15 +90,15 @@ class DefaultExtension extends MProvider {
         }
     }
 
-    // ── getLatestUpdates ──────────────────────────────────────────────────────
+    // â”€â”€ getLatestUpdates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async getLatestUpdates(page) {
-        // Same as popular — airing shows the latest episode releases
+        // Same as popular â€” airing shows the latest episode releases
         return await this.getPopular(page);
     }
 
-    // ── search ────────────────────────────────────────────────────────────────
+    // â”€â”€ search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async search(query, page, filters) {
-        console.log("AnimePahe search: " + query);
+        console.log("AnimePahe [OK]" + query);
         try {
             var data = await this.apiGet("m=search&q=" + encodeURIComponent(query));
             var list = [];
@@ -118,9 +118,9 @@ class DefaultExtension extends MProvider {
         }
     }
 
-    // ── getDetail ─────────────────────────────────────────────────────────────
+    // â”€â”€ getDetail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async getDetail(url) {
-        console.log("AnimePahe getDetail: " + url);
+        console.log("AnimePahe [OK]" + url);
         try {
             var animeSession = url;
             var pageUrl = this.baseUrl + "/anime/" + animeSession;
@@ -224,7 +224,7 @@ class DefaultExtension extends MProvider {
 
             return {
                 link: pageUrl,
-                name: title || "AnimePahe Anime",
+                name: title || "AnimePahe [OK]",
                 imageUrl,
                 description,
                 genre,
@@ -237,7 +237,7 @@ class DefaultExtension extends MProvider {
         }
     }
 
-    // ── Pure-JS p,a,c,k unpacker (avoids Mangayomi's broken unpackJs()) ─────────
+    // â”€â”€ Pure-JS p,a,c,k unpacker (avoids Mangayomi's broken unpackJs()) â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Mangayomi's built-in unpackJs() throws RangeError for Kwik's base-62 packer.
     // This reimplements the standard dean.edwards.name/packer decoder in plain JS.
     manualUnpack(packed) {
@@ -260,7 +260,7 @@ class DefaultExtension extends MProvider {
                 return r;
             }
 
-            // Build identifier→value lookup table
+            // Build identifierâ†’value lookup table
             var d = {};
             for (var i = 0; i < c; i++) {
                 var key = toBase(i);
@@ -277,7 +277,7 @@ class DefaultExtension extends MProvider {
         }
     }
 
-    // ── Kwik extraction ───────────────────────────────────────────────────────
+    // â”€â”€ Kwik extraction â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // AnimePahe uses Kwik as its video host. The flow is:
     //  1. links API returns: {data:[{"1080p":{kwik:"https://kwik.cx/e/XXXX"}}]}
     //  2. Fetch kwik embed page with Referer: animepahe.pw
@@ -328,7 +328,7 @@ class DefaultExtension extends MProvider {
             console.log("DOM parse error: " + e);
         }
 
-        // Method 2: Regex fallback — find kwik URLs directly in the page source
+        // Method 2: Regex fallback â€” find kwik URLs directly in the page source
         if (videos.length === 0) {
             try {
                 // Match patterns like: "https://kwik.cx/e/XXXXX" or 'https://kwik.cx/f/XXXXX'
@@ -379,7 +379,7 @@ class DefaultExtension extends MProvider {
             var body = res.body;
 
             // Look for packed JS blocks: eval(function(p,a,c,k,e,d){...}('encoded',a,c,'k|e|y|s'.split('|'),0,{}))
-            // Use manualUnpack() — NOT unpackJs() which crashes in Mangayomi's Dart runtime
+            // Use manualUnpack() â€” NOT unpackJs() which crashes in Mangayomi's Dart runtime
             var packedMatch = body.match(/eval\(function\(p,a,c,k,e,d\)[\s\S]*?\.split\('\|'\)[\s\S]*?\)\)/g);
             if (packedMatch) {
                 for (var i = 0; i < packedMatch.length; i++) {
@@ -433,7 +433,7 @@ class DefaultExtension extends MProvider {
     }
 
     async getVideoList(url) {
-        console.log("AnimePahe getVideoList: " + url);
+        console.log("AnimePahe [OK]" + url);
         try {
             var parts = url.split("||");
             if (parts.length < 2) {
@@ -461,7 +461,7 @@ class DefaultExtension extends MProvider {
                                     videos.push({
                                         url: m3u8,
                                         originalUrl: m3u8,
-                                        quality: "AnimePahe " + quality,
+                                        quality: "AnimePahe [OK]" + quality,
                                         headers: { "Referer": "https://kwik.cx/" }
                                     });
                                 }
@@ -479,7 +479,7 @@ class DefaultExtension extends MProvider {
                 videos = await this.extractKwikUrl(playUrl);
             }
 
-            // Sort by preferred quality — put preferred resolution first
+            // Sort by preferred quality â€” put preferred resolution first
             var prefQuality = new SharedPreferences().get("preferred_quality") || "1080";
             videos.sort(function(a, b) {
                 var aMatch = (a.quality || "").includes(prefQuality) ? 0 : 1;
@@ -523,3 +523,4 @@ class DefaultExtension extends MProvider {
         ];
     }
 }
+
