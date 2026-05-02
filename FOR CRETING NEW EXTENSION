@@ -1,0 +1,33 @@
+GET ALL OF THIS DATA IN HERE https://kuudere.to
+1. Homepage / Popular / Trending request URL:
+PASTE_FULL_URL_HERE
+
+2. Homepage / Latest / Recently Updated request URL:
+PASTE_FULL_URL_HERE
+
+3. One example JSON response from Popular/Trending:
+PASTE_JSON_HERE
+
+4. One example JSON response from Latest/Recent:
+PASTE_JSON_HERE
+
+5. One anime detail page URL from the site:
+PASTE_URL_HERE
+
+6. The XHR request URL used when opening that anime detail page:
+PASTE_FULL_URL_HERE
+
+7. The XHR request URL used when episodes load:
+PASTE_FULL_URL_HERE
+
+8. One example JSON response from the episodes endpoint:
+PASTE_JSON_HERE
+
+9. One episode page URL or episode ID:
+PASTE_HERE
+
+10. The XHR request URL used when video sources load:
+PASTE_FULL_URL_HERE
+
+11. One example JSON response from the video/sources endpoint:
+PASTE_JSON_HERE
